@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 # unicorn/bindings/python/sample_x86.pyを抜粋・改変
+# Reference: http://ntddk.github.io/2016/07/09/unicorn-internals-python/
 
 from __future__ import print_function # Python 2.7を利用
 from unicorn import *
 from unicorn.x86_const import *
 from capstone import *  # for disassemble
-import sys              # for exit
 
 
 # エミュレーション対象の機械語
