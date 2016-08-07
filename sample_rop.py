@@ -105,13 +105,6 @@ def test_x86_64():
         # エミュレーション開始
         mu.emu_start(ADDRESS, ADDRESS + len(X86_CODE64))
 
-        # メモリから命令列を読む
-        tmp = mu.mem_read(ADDRESS, 2)
-        print(">>> Read 2 bytes from [0x%x] =" %(ADDRESS), end="")
-        for i in tmp:
-            print(" 0x%x" %i, end="")
-        print("")
-
     except UcError as e:
         print("ERROR: %s" % e)
 
