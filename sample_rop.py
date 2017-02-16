@@ -15,15 +15,15 @@ X86_CODE64 = b"\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\
 ADDRESS = 0x400000  # memory address where emulation starts
 # c@Np2Ol6
 INPUT_STR = [0x63, 0x40, 0x4e, 0x70, 0x32, 0x4f, 0x6c, 0x36]
-EXIT_STATUS = 1
 
 
 # for disassemble
 class SimpleEngine:
     def __init__(self):
-        self.capmd = Cs(CS_ARCH_X86, CS_MODE_64) # アーキテクチャ指定
+        self.capmd = Cs(CS_ARCH_X86, CS_MODE_64)    # アーキテクチャ指定
+
     def disas_single(self, data):
-        for i in self.capmd.disasm(data, 16): # 逆アセンブル
+        for i in self.capmd.disasm(data, 16):       # 逆アセンブル
             print("\t%s\t%s" % (i.mnemonic, i.op_str))
             break
 
@@ -32,30 +32,10 @@ disasm = SimpleEngine()
 
 # 各命令に対するコールバック
 def hook_code(uc, address, size, user_data):
-    print(">>> Tracing instruction at 0x%x, instruction size = %u, " %(address, size), end="")
+    print(">>> Tracing instruction at 0x%x, instruction size = %u," % (address, size), end="")
     # メモリから実行される命令を読む
     ins = uc.mem_read(address, size)
     disasm.disas_single(str(ins))
-
-    if ins[0] == 0x90:
-        return
-
-    # print stack top value
-    rsp_addr = uc.reg_read(UC_X86_REG_RSP)
-    try:
-        ret_addr = uc.mem_read(rsp_addr, 4)
-        print ("[+]rsp value: 0x%02x%02x%02x%02x" % (ret_addr[2], ret_addr[3], ret_addr[1], ret_addr[0]))
-        print ("[+]rsp: 0x%x" % rsp_addr)
-    except:
-        pass
-
-    print ("[+]rbp: 0x%x" % uc.reg_read(UC_X86_REG_RBP))
-
-    if ins[0] == 0x80 and ins[1] == 0x34 and ins[2] == 0xe and ins[3] ==0x55:
-        read_addr = uc.reg_read(UC_X86_REG_ESI) + uc.reg_read(UC_X86_REG_ECX)
-        char = uc.mem_read(read_addr, 1)
-        print ("[+]esi + ecx: 0x%x" % (read_addr))
-        print (char)
 
 
 def hook_syscall(uc, user_data):
@@ -69,14 +49,13 @@ def hook_syscall(uc, user_data):
     print ("[+]rdx: 0x%x" % syscall_rdx)
     if syscall_rax == 0x0:
         read_addr = syscall_rsi
-        answer_text = INPUT_STR
-        for c in answer_text:
-            char = chr(c)
+        for i in range(syscall_rdx):
+            char = chr(INPUT_STR[i])
             print ("[+]Write address: 0x%x, value: %c" % (read_addr, char))
             uc.mem_write(read_addr, char)
             read_addr += 1
     elif syscall_rax == 0x3c:
-        EXIT_STATUS = syscall_rdi
+        print("Exit status: %d" % syscall_rdi)
         uc.emu_stop()
 
 
@@ -109,7 +88,7 @@ def test_x86_64():
         print("ERROR: %s" % e)
 
 
-def set_input(string=[0,0,0,0,0,0,0,0]):
+def set_input(string=[0, 0, 0, 0, 0, 0, 0, 0]):
     for i, x in enumerate(string):
         if i > 7:
             break
@@ -125,7 +104,6 @@ if __name__ == '__main__':
         s.add(0x20 <= x, x <= 0x7e)
         val = 0x55 ^ x
         s.add(val == ans[len(ans) - 1 - i])
-
 
     if s.check() == sat:
         m = s.model()
