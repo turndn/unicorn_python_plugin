@@ -1,0 +1,61 @@
+ 400080:    68 19 01 40 00           pushq  $0x400119
+ 400085:    6a 01                    pushq  $0x1
+ 400087:    68 06 01 40 00           pushq  $0x400106
+ 40008c:    68 19 01 40 00           pushq  $0x400119
+ 400091:    68 29 01 40 00           pushq  $0x400129
+ 400096:    6a 3c                    pushq  $0x3c
+ 400098:    68 02 01 40 00           pushq  $0x400102
+ 40009d:    68 10 01 40 00           pushq  $0x400110
+ 4000a2:    48 b8 36 15 1b 25 67     movabs $0x63391a67251b1536,%rax
+ 4000a9:    1a 39 63
+ 4000ac:    50                       push   %rax
+ 4000ad:    68 02 01 40 00           pushq  $0x400102
+ 4000b2:    6a 00                    pushq  $0x0
+ 4000b4:    68 06 01 40 00           pushq  $0x400106
+ 4000b9:    68 14 01 40 00           pushq  $0x400114
+ 4000be:    68 0c 01 40 00           pushq  $0x40010c
+ 4000c3:    68 02 01 40 00           pushq  $0x400102
+ 4000c8:    68 26 01 40 00           pushq  $0x400126
+ 4000cd:    68 14 01 40 00           pushq  $0x400114
+ 4000d2:    6a 07                    pushq  $0x7
+ 4000d4:    68 0a 01 40 00           pushq  $0x40010a
+ 4000d9:    6a e0                    pushq  $0xffffffffffffffe0
+ 4000db:    68 08 01 40 00           pushq  $0x400108
+ 4000e0:    68 19 01 40 00           pushq  $0x400119
+ 4000e5:    6a 08                    pushq  $0x8
+ 4000e7:    68 04 01 40 00           pushq  $0x400104
+ 4000ec:    6a 00                    pushq  $0x0
+ 4000ee:    68 1c 01 40 00           pushq  $0x40011c
+ 4000f3:    6a 00                    pushq  $0x0
+ 4000f5:    68 06 01 40 00           pushq  $0x400106
+ 4000fa:    6a 00                    pushq  $0x0
+ 4000fc:    68 02 01 40 00           pushq  $0x400102
+ 400101:    c3                       retq  
+ 400102:    58                       pop    %rax
+ 400103:    c3                       retq  
+ 400104:    5a                       pop    %rdx
+ 400105:    c3                       retq  
+ 400106:    5f                       pop    %rdi
+ 400107:    c3                       retq  
+ 400108:    5d                       pop    %rbp
+ 400109:    c3                       retq  
+ 40010a:    59                       pop    %rcx
+ 40010b:    c3                       retq  
+ 40010c:    48 01 ec                 add    %rbp,%rsp
+ 40010f:    c3                       retq  
+ 400110:    48 39 06                 cmp    %rax,(%rsi)
+ 400113:    c3                       retq  
+ 400114:    80 34 0e 55              xorb   $0x55,(%rsi,%rcx,1)
+ 400118:    c3                       retq  
+ 400119:    0f 05                    syscall
+ 40011b:    c3                       retq  
+ 40011c:    48 89 e6                 mov    %rsp,%rsi
+ 40011f:    41 5a                    pop    %r10
+ 400121:    c3                       retq  
+ 400122:    48 89 f1                 mov    %rsi,%rcx
+ 400125:    c3                       retq  
+ 400126:    48 ff c9                 dec    %rcx
+ 400129:    75 01                    jne    0x40012c
+ 40012b:    c3                       retq  
+ 40012c:    41 5a                    pop    %r10
+ 40012e:    c3                       retq  
