@@ -1,6 +1,7 @@
 #! /usr/env/bin python
 # -*- coding: utf-8 -*-
 
+import sys
 from triton import TritonContext, ARCH, MODE, Instruction, MemoryAccess
 from triton import CPUSIZE
 
@@ -72,8 +73,11 @@ function = {
     0x40012e: '\xc3',   # retq
 }
 
+user_input = 0x0
+
 
 def before_processing(inst, triton):
+    global user_input
     if inst.getAddress() == 0x400110:
         rsp = triton.getRegisterAst(triton.registers.rsp).evaluate()
 
@@ -93,12 +97,27 @@ def before_processing(inst, triton):
         model = triton.getModel(c)
         for k, v in model.items():
             value = v.getValue()
-            triton.setConcreteSymbolicVariableValue(
-                triton.getSymbolicVariableFromId(k), value)
+            user_input = value
+            # triton.setConcreteSymbolicVariableValue(
+            #     triton.getSymbolicVariableFromId(k), value)
             print('[+] Symbolic variable %02d = %02x' % (k, value))
 
         var = triton.convertRegisterToSymbolicVariable(triton.registers.rsp)
         triton.setConcreteSymbolicVariableValue(var, rsp)
+    elif inst.getAddress() == 0x400119:
+        rax = triton.getRegisterAst(triton.registers.rax).evaluate()
+        rdi = triton.getRegisterAst(triton.registers.rdi).evaluate()
+        rsi = triton.getRegisterAst(triton.registers.rsi).evaluate()
+        rdx = triton.getRegisterAst(triton.registers.rdx).evaluate()
+        print("rax: %16x rdi: %16x" % (rax, rdi))
+        print("rsi: %16x rdx: %16x" % (rsi, rdx))
+        if rax == 0:
+            triton.setConcreteMemoryValue(
+                MemoryAccess(rsi, CPUSIZE.QWORD), user_input)
+            triton.convertMemoryToSymbolicVariable(MemoryAccess(rsi, rdx * 8))
+        elif rax == 0x3c:
+            return rdi == 0
+    return False
 
 
 def after_processing(inst, triton):
@@ -107,10 +126,9 @@ def after_processing(inst, triton):
         rdi = triton.getRegisterAst(triton.registers.rdi).evaluate()
         rsi = triton.getRegisterAst(triton.registers.rsi).evaluate()
         rdx = triton.getRegisterAst(triton.registers.rdx).evaluate()
-        print("rax: %16x rdi: %16x" % (rax, rdi))
-        print("rsi: %16x rdx: %16x" % (rsi, rdx))
+        # print("rax: %16x rdi: %16x" % (rax, rdi))
+        # print("rsi: %16x rdx: %16x" % (rsi, rdx))
         triton.setConcreteRegisterValue(triton.registers.rax, 0x0)
-        triton.convertMemoryToSymbolicVariable(MemoryAccess(rsi, rdx * 8))
     elif inst.getAddress() == 0x4000d9:
         rsp = triton.getRegisterAst(triton.registers.rsp).evaluate()
         print('rsp: %16x' % rsp)
@@ -142,27 +160,34 @@ def after_processing(inst, triton):
             print('value: %16x' % (val))
 
 
-if __name__ == '__main__':
+def initialize():
     triton = TritonContext()
     triton.setArchitecture(ARCH.X86_64)
     triton.enableMode(MODE.ALIGNED_MEMORY, True)
-
-    pc = 0x400080
-
     triton.setConcreteRegisterValue(triton.registers.rsp, 0x7fffffff)
+    return triton
 
-    while pc in function:
-        inst = Instruction()
-        inst.setOpcode(function[pc])
-        inst.setAddress(pc)
 
-        before_processing(inst, triton)
+if __name__ == '__main__':
 
-        triton.processing(inst)
-        print(inst)
+    for i in range(10):
+        triton = initialize()
+        pc = 0x400080
 
-        after_processing(inst, triton)
+        while pc in function:
+            inst = Instruction()
+            inst.setOpcode(function[pc])
+            inst.setAddress(pc)
 
-        pc = triton.getRegisterAst(triton.registers.rip).evaluate()
+            if before_processing(inst, triton):
+                sys.exit(0)
 
-    print("pc: %16x" % (pc))
+            triton.processing(inst)
+            print(inst)
+
+            after_processing(inst, triton)
+
+            pc = triton.getRegisterAst(triton.registers.rip).evaluate()
+
+        print("pc: %16x" % (pc))
+    print("give up")
